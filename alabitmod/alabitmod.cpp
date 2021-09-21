@@ -5,11 +5,25 @@
 BAKKESMOD_PLUGIN(alabitmod, "test the mod ecosystem", plugin_version, PLUGINTYPE_FREEPLAY)
 
 std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
+bool coolEnabled = false;
 
 void alabitmod::onLoad()
 {
 	_globalCvarManager = cvarManager;
-	//cvarManager->log("Plugin loaded!");
+
+	cvarManager->log("Hello I'm alabitplugin B)");
+	cvarManager->registerNotifier("CoolerBallOnTop", [this](std::vector<std::string> args) {
+		ballOnTop();
+		}, "", PERMISSION_ALL);
+
+	cvarManager->registerCvar("cool_enabled", "0", "Enable Cool", true, true, 0, true, 1)
+		.addOnValueChanged([this](std::string oldValue, CVarWrapper cvar) {
+		coolEnabled = cvar.getBoolValue();
+			});
+
+	cvarManager->registerCvar("cool_distance", "200.0", "Distance to place the ball above");
+
+
 
 	//cvarManager->registerNotifier("my_aweseome_notifier", [&](std::vector<std::string> args) {
 	//	cvarManager->log("Hello notifier!");
@@ -45,4 +59,29 @@ void alabitmod::onLoad()
 
 void alabitmod::onUnload()
 {
+	cvarManager->log("Peace out nerds");
+}
+
+void alabitmod::ballOnTop()
+{
+	if (!gameWrapper->IsInFreeplay()) { return; }
+	ServerWrapper server = gameWrapper->GetCurrentGameState();
+	if (!server) { return; }
+	if (!coolEnabled) { return; }
+
+	CVarWrapper distanceCVar = cvarManager->getCvar("cool_distance");
+	if (!distanceCVar) { return; }
+	float distance = distanceCVar.getFloatValue();
+
+	BallWrapper ball = server.GetBall();
+	if (!ball) { return; }
+	CarWrapper car = gameWrapper->GetLocalCar();
+	if (!car) { return; }
+
+	Vector carVelocity = car.GetVelocity();
+	ball.SetVelocity(carVelocity);
+
+	Vector carLocation = car.GetLocation();
+	float ballRadius = ball.GetRadius();
+	ball.SetLocation(carLocation + Vector{ 0, 0, distance });
 }

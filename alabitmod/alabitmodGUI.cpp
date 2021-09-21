@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "alabitmod.h"
 
-/* Plugin Settings Window code here
+ //Plugin Settings Window code here
 std::string alabitmod::GetPluginName() {
 	return "alabitmod";
 }
@@ -15,8 +15,38 @@ void alabitmod::SetImGuiContext(uintptr_t ctx) {
 //  f2 -> plugins -> alabitmod
 void alabitmod::RenderSettings() {
 	ImGui::TextUnformatted("alabitmod plugin settings");
+
+	if (ImGui::Button("Ball On Top")) {
+		gameWrapper->Execute([this](GameWrapper* gw) {
+			cvarManager->executeCommand("CoolerBallOnTop");
+			});
+	}
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("Activate Ball On Top");
+	}
+
+	CVarWrapper enableCvar = cvarManager->getCvar("cool_enabled");
+	if (!enableCvar) { return; }
+	bool enabled = enableCvar.getBoolValue();
+	if (ImGui::Checkbox("Enable plugin", &enabled)) {
+		enableCvar.setValue(enabled);
+	}
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("Toggle Cool Plugin");
+	}
+
+	CVarWrapper distanceCvar = cvarManager->getCvar("cool_distance");
+	if (!distanceCvar) { return; }
+	float distance = distanceCvar.getFloatValue();
+	if (ImGui::SliderFloat("Distance", &distance, 0.0, 500.0)) {
+		distanceCvar.setValue(distance);
+	}
+	if (ImGui::IsItemHovered()) {
+		std::string hoverText = "distance is " + std::to_string(distance);
+		ImGui::SetTooltip(hoverText.c_str());
+	}
 }
-*/
+
 
 /*
 // Do ImGui rendering here
